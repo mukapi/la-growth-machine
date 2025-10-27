@@ -1,5 +1,6 @@
 // Swiper Testimonial Slider Configuration
 // This script initializes a Swiper slider for testimonials with custom opacity effects
+// Updated: GitHub Pages deployment test
 
 console.log('🚀 Swiper Testimonial Script: Starting to load...');
 
