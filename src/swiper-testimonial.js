@@ -1,9 +1,30 @@
 // Swiper Testimonial Slider Configuration
 // This script initializes a Swiper slider for testimonials with custom opacity effects
 
+console.log('🚀 Swiper Testimonial Script: Starting to load...');
+
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('📄 Swiper Testimonial Script: DOM Content Loaded');
+  
+  // Check if Swiper is available
+  if (typeof Swiper === 'undefined') {
+    console.error('❌ Swiper Testimonial Script: Swiper library not found! Make sure to include Swiper CDN before this script.');
+    return;
+  }
+  
+  console.log('✅ Swiper Testimonial Script: Swiper library found');
+  
+  // Check if testimonial slider element exists
+  const sliderElement = document.querySelector('.testimonial_slider');
+  if (!sliderElement) {
+    console.warn('⚠️ Swiper Testimonial Script: No element with class "testimonial_slider" found');
+    return;
+  }
+  
+  console.log('✅ Swiper Testimonial Script: Testimonial slider element found');
   
   // Initialisation de Swiper
+  console.log('🎯 Swiper Testimonial Script: Initializing Swiper...');
   const swiper = new Swiper('.testimonial_slider', {
     direction: 'horizontal',
     slidesPerView: 'auto',
@@ -32,10 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Gestion de l'opacité des slides
     on: {
       init: function() {
+        console.log('🎉 Swiper Testimonial Script: Swiper initialized successfully!');
+        console.log('📊 Swiper Testimonial Script: Total slides:', this.slides.length);
         updateSlidesOpacity(this);
       },
       
       slideChange: function() {
+        console.log('🔄 Swiper Testimonial Script: Slide changed to index:', this.activeIndex);
         updateSlidesOpacity(this);
       },
       
@@ -55,10 +79,13 @@ document.addEventListener('DOMContentLoaded', function() {
     swiperInstance.slides.forEach((slide, index) => {
       if (index === swiperInstance.activeIndex) {
         slide.style.opacity = '1';
+        console.log('✨ Swiper Testimonial Script: Slide', index, 'is now active (opacity: 1)');
       } else {
         slide.style.opacity = '0.5';
       }
     });
   }
+  
+  console.log('🎯 Swiper Testimonial Script: Setup complete!');
   
 });
