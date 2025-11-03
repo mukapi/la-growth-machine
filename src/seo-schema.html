@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEO Schema Markup Template</title>
+  </head>
+  <body>
+    <!-- WebPage Schema with ItemList -->
+    <div itemscope itemtype="https://schema.org/WebPage">
+      <h1 itemprop="name">Page Title</h1>
+      <link itemprop="url" href="https://example.com/page-url" />
+      <meta itemprop="description" content="Page meta description" />
+
+      <!-- ItemList Schema -->
+      <div itemscope itemtype="https://schema.org/ItemList" itemprop="mainEntity">
+        <meta itemprop="name" content="Glossary of Business & Sales Terms" />
+        <meta itemprop="numberOfItems" content="3" />
+
+        <!-- List Item 1 -->
+        <div itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement">
+          <meta itemprop="position" content="1" />
+          <a itemprop="url" href="https://example.com/item-1">Item Title 1</a>
+        </div>
+
+        <!-- List Item 2 -->
+        <div itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement">
+          <meta itemprop="position" content="2" />
+          <a itemprop="url" href="https://example.com/item-2">Item Title 2</a>
+        </div>
+
+        <!-- List Item 3 -->
+        <div itemscope itemtype="https://schema.org/ListItem" itemprop="itemListElement">
+          <meta itemprop="position" content="3" />
+          <a itemprop="url" href="https://example.com/item-3">Item Title 3</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
