@@ -218,12 +218,15 @@
     // Initialiser la thumbnail
     initThumbnail();
 
-    // Optionnel : ajouter un listener sur le trigger pour précharger
+    // Écouter le clic sur le trigger pour charger la vidéo immédiatement
     const trigger = document.querySelector(CONFIG.triggerSelector);
     if (trigger) {
       trigger.addEventListener('click', () => {
-        // La vidéo se chargera au clic sur la thumbnail
-        console.log('Modal opened, thumbnail ready');
+        console.log('Modal opened, loading video...');
+        // Charger la vidéo avec un petit délai pour laisser la modal s'ouvrir
+        setTimeout(() => {
+          loadYouTubeVideo();
+        }, 300); // 300ms pour que l'animation Webflow se termine
       });
     }
 
