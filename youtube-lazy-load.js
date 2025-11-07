@@ -135,7 +135,6 @@
     const container = document.querySelector(CONFIG.containerSelector);
 
     if (!container) {
-      console.warn('YouTube lazy load: Container not found');
       return;
     }
 
@@ -164,8 +163,6 @@
     container.appendChild(iframeWrapper);
 
     isVideoLoaded = true;
-
-    console.log('YouTube video loaded successfully');
   }
 
   /**
@@ -181,7 +178,6 @@
       container.appendChild(thumbnail);
 
       isVideoLoaded = false;
-      console.log('YouTube video reset');
     }
   }
 
@@ -202,8 +198,6 @@
     // Ajouter la thumbnail
     const thumbnail = createThumbnail();
     container.appendChild(thumbnail);
-
-    console.log('YouTube thumbnail initialized');
   }
 
   /**
@@ -223,7 +217,6 @@
     const trigger = document.querySelector(CONFIG.triggerSelector);
     if (trigger) {
       trigger.addEventListener('click', () => {
-        console.log('🎬 Modal opened, loading video...');
         // Charger la vidéo avec un petit délai pour laisser la modal s'ouvrir
         setTimeout(() => {
           loadYouTubeVideo();
@@ -236,19 +229,13 @@
     if (closeButtons.length > 0) {
       closeButtons.forEach(closeButton => {
         closeButton.addEventListener('click', () => {
-          console.log('❌ Modal closing, resetting video...');
           // Réinitialiser la vidéo avec un petit délai pour laisser la modal se fermer
           setTimeout(() => {
             resetVideo();
           }, 300); // 300ms pour que l'animation Webflow se termine
         });
       });
-      console.log(`✅ ${closeButtons.length} close button(s) initialized`);
-    } else {
-      console.warn('⚠️ No close buttons found. Add data-youtube-close attribute to your close buttons.');
     }
-
-    console.log('YouTube lazy load initialized');
   }
 
   // Lancer l'initialisation
