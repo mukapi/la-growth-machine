@@ -38,7 +38,20 @@ Remplacer la vidéo YouTube par un système de lazy loading :
 > **💡 Pas besoin de CSS !**
 > Le script gère automatiquement le ratio 16:9 et tous les styles nécessaires.
 
-### 3️⃣ Ajouter le script JavaScript
+### 3️⃣ Sur les boutons qui ferment la modal
+
+**Sur TOUS les éléments qui ferment la modal (bouton X, overlay, bouton "Close", etc.) :**
+
+1. Sélectionne chaque élément qui peut fermer la modal
+2. Panneau Settings (⚙️) → **Custom Attributes**
+3. Ajoute un attribut :
+   - **Name:** `data-youtube-close`
+   - **Value:** (laisser vide)
+
+> **💡 Pourquoi ?**
+> Quand l'utilisateur ferme la modal, la vidéo s'arrête et se réinitialise. À la prochaine ouverture, la vidéo recommencera depuis le début.
+
+### 4️⃣ Ajouter le script JavaScript
 
 **Dans Webflow :**
 
@@ -56,7 +69,7 @@ Remplacer la vidéo YouTube par un système de lazy loading :
 
 > **💡 Conseil :** Il vaut mieux copier-coller tout le contenu du fichier `youtube-lazy-load.js` directement entre les balises `<script></script>` pour éviter les problèmes de cache et de chargement externe.
 
-### 4️⃣ Publier et tester
+### 5️⃣ Publier et tester
 
 1. **Publie** ton site Webflow
 2. Ouvre la page en navigation privée (pour tester sans cache)

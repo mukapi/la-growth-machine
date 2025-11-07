@@ -11,6 +11,7 @@
     videoId: 'lRE9TmJTXqI',
     triggerSelector: '[data-youtube-trigger]', // Attribut sur le bouton qui ouvre la modal
     containerSelector: '[data-youtube-container]', // Attribut sur le container de la vidéo
+    closeSelector: '[data-youtube-close]', // Attribut sur les éléments qui ferment la modal
     autoplay: true, // Lancer automatiquement la vidéo
     thumbnailQuality: 'maxresdefault', // maxresdefault, hqdefault, mqdefault
     showPlayButton: true // Afficher un bouton play sur la thumbnail
@@ -222,7 +223,7 @@
     const trigger = document.querySelector(CONFIG.triggerSelector);
     if (trigger) {
       trigger.addEventListener('click', () => {
-        console.log('Modal opened, loading video...');
+        console.log('🎬 Modal opened, loading video...');
         // Charger la vidéo avec un petit délai pour laisser la modal s'ouvrir
         setTimeout(() => {
           loadYouTubeVideo();
@@ -230,27 +231,22 @@
       });
     }
 
-    // Optionnel : écouter la fermeture de la modal pour réinitialiser
-    // (décommenter si tu veux que la vidéo se réinitialise à chaque ouverture)
-    /*
-    const modal = document.querySelector('.hero-modal_wrap');
-    if (modal) {
-      // Observer le changement de display
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.attributeName === 'style') {
-            const display = window.getComputedStyle(modal).display;
-            if (display === 'none' && isVideoLoaded) {
-              // Modal fermée, réinitialiser la vidéo
-              setTimeout(resetVideo, 300);
-            }
-          }
+    // Écouter les clics sur tous les boutons de fermeture
+    const closeButtons = document.querySelectorAll(CONFIG.closeSelector);
+    if (closeButtons.length > 0) {
+      closeButtons.forEach(closeButton => {
+        closeButton.addEventListener('click', () => {
+          console.log('❌ Modal closing, resetting video...');
+          // Réinitialiser la vidéo avec un petit délai pour laisser la modal se fermer
+          setTimeout(() => {
+            resetVideo();
+          }, 300); // 300ms pour que l'animation Webflow se termine
         });
       });
-
-      observer.observe(modal, { attributes: true });
+      console.log(`✅ ${closeButtons.length} close button(s) initialized`);
+    } else {
+      console.warn('⚠️ No close buttons found. Add data-youtube-close attribute to your close buttons.');
     }
-    */
 
     console.log('YouTube lazy load initialized');
   }
