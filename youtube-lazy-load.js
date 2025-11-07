@@ -188,7 +188,6 @@
     const container = document.querySelector(CONFIG.containerSelector);
 
     if (!container) {
-      console.warn('YouTube lazy load: Container not found. Add data-youtube-container attribute to your video container.');
       return;
     }
 
