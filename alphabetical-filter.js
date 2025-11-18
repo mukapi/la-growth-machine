@@ -714,13 +714,50 @@ class AlphabeticalFilter {
   }
 }
 
-// Auto-initialize when DOM is ready
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => {
+// Auto-initialize when Finsweet CMS Load completes (or DOM ready as fallback)
+function initGlossaryFilter() {
+  // Check if Finsweet Attributes is being used
+  const hasFinsweetList = document.querySelector('[fs-list-element="list"]');
+
+  if (hasFinsweetList) {
+    // Wait for Finsweet to load all items
+    window.fsAttributes = window.fsAttributes || [];
+    window.fsAttributes.push([
+      'cmsload',
+      (listInstances) => {
+        console.log('📦 Finsweet CMS Load detected, waiting for all items...');
+
+        // Get the first list instance (or handle multiple if needed)
+        const [listInstance] = listInstances;
+
+        if (listInstance) {
+          // Wait for all items to be loaded
+          listInstance.on('renderitems', (renderedItems) => {
+            // Small delay to ensure DOM is fully updated
+            setTimeout(() => {
+              console.log(`📦 Finsweet loaded ${renderedItems.length} items`);
+              window.glossaryFilter = new AlphabeticalFilter();
+            }, 100);
+          });
+        } else {
+          // Fallback if no list instance
+          console.log('📦 No Finsweet list instance found, initializing anyway...');
+          window.glossaryFilter = new AlphabeticalFilter();
+        }
+      },
+    ]);
+  } else {
+    // No Finsweet, initialize immediately
+    console.log('📦 No Finsweet detected, initializing immediately...');
     window.glossaryFilter = new AlphabeticalFilter();
-  });
+  }
+}
+
+// Start initialization when DOM is ready
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initGlossaryFilter);
 } else {
-  window.glossaryFilter = new AlphabeticalFilter();
+  initGlossaryFilter();
 }
 
 // Export for manual initialization if needed
