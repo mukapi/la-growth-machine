@@ -219,14 +219,26 @@ class AlphabeticalFilter {
     // Store container reference for later use
     this.container = container;
 
+    // Sort items alphabetically
     const sortedItems = [...this.items].sort((a, b) => {
       if (a.letter !== b.letter) return a.letter.localeCompare(b.letter);
       return a.title.localeCompare(b.title);
     });
 
+    // Physically reorder items in the DOM (initial setup only)
     sortedItems.forEach((item) => container.removeChild(item.element));
     sortedItems.forEach((item) => container.appendChild(item.element));
     this.items = sortedItems;
+
+    // Assign CSS order values for visual ordering
+    // Each letter group gets: header (order N*1000), items (order N*1000 + 1, N*1000 + 2, etc.)
+    const letterCounts = {};
+
+    sortedItems.forEach((item) => {
+      const letterIndex = item.letter.charCodeAt(0) - 64; // A=1, B=2, etc.
+      letterCounts[item.letter] = (letterCounts[item.letter] || 0) + 1;
+      item.element.style.order = letterIndex * 1000 + letterCounts[item.letter];
+    });
   }
 
   displayLetterHeadlines() {
@@ -291,6 +303,10 @@ class AlphabeticalFilter {
     letterHeader.style.gridColumn = `span ${gridColumnCount}`;
     letterHeader.style.display = "flex";
 
+    // Assign order value: letter index * 1000 (items get 1001, 1002, etc.)
+    const letterIndex = letter.charCodeAt(0) - 64; // A=1, B=2, etc.
+    letterHeader.style.order = letterIndex * 1000;
+
     this.letterHeaders.set(letter, letterHeader);
     container.insertBefore(letterHeader, parentItem);
   }
@@ -349,28 +365,77 @@ class AlphabeticalFilter {
 
   updateHeadersAfterFinsweetFilter() {
     const visibleLetters = new Set();
+    const visibleItemsByLetter = new Map();
 
-    // Detect which letters have visible items
+    // Detect which letters have visible items and collect them
+    let totalVisible = 0;
+    let totalHidden = 0;
+
     this.items.forEach((item) => {
-      const isVisible = item.element.style.display !== "none";
+      // Check multiple ways Finsweet might hide items
+      const computedStyle = window.getComputedStyle(item.element);
+      const styleDisplay = item.element.style.display;
+      const computedDisplay = computedStyle.display;
+      const hasHiddenAttr = item.element.hasAttribute("fs-list-hidden");
+
+      // Also check offsetParent (null when hidden) and getBoundingClientRect
+      const rect = item.element.getBoundingClientRect();
+      const hasSize = rect.width > 0 && rect.height > 0;
+
+      const isVisible =
+        styleDisplay !== "none" &&
+        computedDisplay !== "none" &&
+        !hasHiddenAttr &&
+        hasSize;
+
       if (isVisible) {
+        totalVisible++;
         visibleLetters.add(item.letter);
+        if (!visibleItemsByLetter.has(item.letter)) {
+          visibleItemsByLetter.set(item.letter, []);
+        }
+        visibleItemsByLetter.get(item.letter).push(item);
+      } else {
+        totalHidden++;
       }
     });
 
     const container = this.container;
     if (!container) return;
 
-    const gridColumnCount = window.getComputedStyle(container).gridTemplateColumns.split(" ")
+    const gridColumnCount =
+      window.getComputedStyle(container).gridTemplateColumns.split(" ")
         .length || 2;
 
-    // Show/hide headers based on visible letters
-    this.letterHeaders.forEach((header, letter) => {
-      if (visibleLetters.has(letter)) {
+    // Recalculate orders for visible items only
+    // This ensures items fill the grid correctly when filtered
+    const sortedVisibleLetters = Array.from(visibleLetters).sort();
+
+    sortedVisibleLetters.forEach((letter, letterIdx) => {
+      // Header gets order = (letterIdx + 1) * 1000
+      const header = this.letterHeaders.get(letter);
+      if (header) {
         header.style.display = "flex";
         header.style.gridColumn = `span ${gridColumnCount}`;
-      } else {
+        header.style.order = (letterIdx + 1) * 1000;
+      }
+
+      // Items get order = (letterIdx + 1) * 1000 + position
+      const items = visibleItemsByLetter.get(letter) || [];
+      items.forEach((item, itemIdx) => {
+        item.element.style.order = (letterIdx + 1) * 1000 + itemIdx + 1;
+      });
+    });
+
+    // Hide headers for letters with no visible items
+    const hiddenHeaders = [];
+    const shownHeaders = [];
+    this.letterHeaders.forEach((header, letter) => {
+      if (!visibleLetters.has(letter)) {
         header.style.display = "none";
+        hiddenHeaders.push(letter);
+      } else {
+        shownHeaders.push(letter);
       }
     });
 
