@@ -19,6 +19,7 @@ class AlphabeticalFilter {
       inactiveLinkClass: config.inactiveLinkClass || "is-inactive",
       letterSeparatorClass: config.letterSeparatorClass || "glossary-letter",
       spacerClass: config.spacerClass || "spacer",
+      anchorOffset: config.anchorOffset ?? 5000,
       ...config,
     };
 
@@ -91,6 +92,7 @@ class AlphabeticalFilter {
         anchorElement.setAttribute("data-letter", item.letter);
         item.id = uniqueId;
         item.anchorElement = anchorElement;
+        this.applyAnchorOffset(anchorElement);
       }
 
       if (hiddenLetterElement) {
@@ -98,6 +100,13 @@ class AlphabeticalFilter {
         hiddenLetterElement.textContent = item.letter;
       }
     });
+  }
+
+  applyAnchorOffset(anchorElement) {
+    if (!anchorElement) return;
+    const offset = Number(this.config.anchorOffset);
+    if (Number.isNaN(offset)) return;
+    anchorElement.style.scrollMarginTop = `${offset}px`;
   }
 
   generateAlphabet() {
@@ -116,6 +125,8 @@ class AlphabeticalFilter {
     } else {
       this.createLinksDynamically(container);
     }
+
+    this.bindAnchorLinks(container);
   }
 
   createLinksFromTemplate(container, template) {
@@ -157,6 +168,43 @@ class AlphabeticalFilter {
     });
 
     container.appendChild(fragment);
+  }
+
+  bindAnchorLinks(container) {
+    if (!container) return;
+
+    container.querySelectorAll("[data-letter-link]").forEach((link) => {
+      const anchor =
+        link.tagName === "A" ? link : link.querySelector("a") || link;
+      if (!anchor || anchor.getAttribute("data-offset-bound") === "true")
+        return;
+
+      anchor.setAttribute("data-offset-bound", "true");
+      anchor.addEventListener("click", (event) => {
+        const href =
+          anchor.getAttribute("href") || link.getAttribute("href") || "";
+        if (!href.startsWith("#")) return;
+
+        event.preventDefault();
+        this.scrollToAnchor(href.slice(1));
+      });
+    });
+  }
+
+  scrollToAnchor(targetId) {
+    if (!targetId) return;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    const offset = Number(this.config.anchorOffset) || 0;
+    const targetPosition =
+      target.getBoundingClientRect().top + window.pageYOffset;
+    const scrollTop = Math.max(targetPosition - offset, 0);
+
+    window.scrollTo({
+      top: scrollTop,
+      behavior: "smooth",
+    });
   }
 
   createLinksDynamically(container) {
@@ -368,36 +416,14 @@ class AlphabeticalFilter {
     const visibleItemsByLetter = new Map();
 
     // Detect which letters have visible items and collect them
-    let totalVisible = 0;
-    let totalHidden = 0;
-
     this.items.forEach((item) => {
-      // Check multiple ways Finsweet might hide items
-      const computedStyle = window.getComputedStyle(item.element);
-      const styleDisplay = item.element.style.display;
-      const computedDisplay = computedStyle.display;
-      const hasHiddenAttr = item.element.hasAttribute("fs-list-hidden");
+      if (!this.isItemVisible(item)) return;
 
-      // Also check offsetParent (null when hidden) and getBoundingClientRect
-      const rect = item.element.getBoundingClientRect();
-      const hasSize = rect.width > 0 && rect.height > 0;
-
-      const isVisible =
-        styleDisplay !== "none" &&
-        computedDisplay !== "none" &&
-        !hasHiddenAttr &&
-        hasSize;
-
-      if (isVisible) {
-        totalVisible++;
-        visibleLetters.add(item.letter);
-        if (!visibleItemsByLetter.has(item.letter)) {
-          visibleItemsByLetter.set(item.letter, []);
-        }
-        visibleItemsByLetter.get(item.letter).push(item);
-      } else {
-        totalHidden++;
+      visibleLetters.add(item.letter);
+      if (!visibleItemsByLetter.has(item.letter)) {
+        visibleItemsByLetter.set(item.letter, []);
       }
+      visibleItemsByLetter.get(item.letter).push(item);
     });
 
     const container = this.container;
@@ -440,6 +466,24 @@ class AlphabeticalFilter {
     });
 
     this.updateNavigationAfterSearch(visibleLetters);
+  }
+
+  isItemVisible(item) {
+    if (!item?.element) return false;
+
+    const computedStyle = window.getComputedStyle(item.element);
+    const styleDisplay = item.element.style.display;
+    const computedDisplay = computedStyle.display;
+    const hasHiddenAttr = item.element.hasAttribute("fs-list-hidden");
+    const rect = item.element.getBoundingClientRect();
+    const hasSize = rect.width > 0 && rect.height > 0;
+
+    return (
+      styleDisplay !== "none" &&
+      computedDisplay !== "none" &&
+      !hasHiddenAttr &&
+      hasSize
+    );
   }
 
   initResponsive() {
@@ -515,8 +559,7 @@ class AlphabeticalFilter {
         link.classList.add(this.config.activeLinkClass);
 
         const firstVisibleItem = this.items.find(
-          (item) =>
-            item.letter === letter && item.element.style.display !== "none"
+          (item) => item.letter === letter && this.isItemVisible(item)
         );
 
         if (firstVisibleItem?.id) {
